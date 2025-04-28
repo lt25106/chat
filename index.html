@@ -1,119 +1,147 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Simple Chat</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      max-width: 800px;
-      margin: 0 auto;
-      padding: 20px;
-    }
-    #chat-container {
-      border: 1px solid #ccc;
-      padding: 20px;
-      height: 400px;
-      overflow-y: auto;
-      margin-bottom: 20px;
-    }
-    .message {
-      margin-bottom: 10px;
-      padding: 8px;
-      border-radius: 5px;
-      background-color: #f0f0f0;
-    }
-    .message .time {
-      font-size: 0.8em;
-      color: #666;
-    }
-    #message-form {
-      display: flex;
-      gap: 10px;
-    }
-    #message-input {
-      flex-grow: 1;
-      padding: 8px;
-    }
-    button {
-      padding: 8px 16px;
-      background-color: #007bff;
-      color: white;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-    }
-    button:hover {
-      background-color: #0056b3;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Chat</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        #chat-container {
+            border: 1px solid #ccc;
+            padding: 20px;
+            height: 400px;
+            overflow-y: auto;
+            margin-bottom: 20px;
+        }
+        .message {
+            margin-bottom: 10px;
+            padding: 8px;
+            border-radius: 5px;
+            background-color: #f0f0f0;
+        }
+        .message .time {
+            font-size: 0.8em;
+            color: #666;
+        }
+        #message-form {
+            display: flex;
+            gap: 10px;
+        }
+        #message-input {
+            flex-grow: 1;
+            padding: 8px;
+        }
+        button {
+            padding: 8px 16px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        #nickname-container {
+            margin-bottom: 15px;
+            display: flex;
+            gap: 10px;
+        }
+        #nickname-input {
+            padding: 8px;
+        }
+    </style>
 </head>
 <body>
-  <div id="chat-container"></div>
-  <form id="message-form">
-    <input type="text" id="message-input" placeholder="Type your message..." required>
-    <button type="submit">Send</button>
-  </form>
-  
-  <!-- Firebase SDK -->
-  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
-  
-  <script>
-    // Firebase configuration
-    const firebaseConfig = {
-      apiKey: "AIzaSyDg0wUy2BgfkdM_9ZxywZ81rXiqLdugqg0",
-      authDomain: "chat-4b9b6.firebaseapp.com",
-      databaseURL: "https://chat-4b9b6-default-rtdb.asia-southeast1.firebasedatabase.app",
-      projectId: "chat-4b9b6",
-      storageBucket: "chat-4b9b6.firebasestorage.app",
-      messagingSenderId: "67637601490",
-      appId: "1:67637601490:web:8ee0d3f44868c950c9790b"
-    };
+    <div id="nickname-container">
+        <input type="text" id="nickname-input" placeholder="Enter your nickname" required>
+        <button id="set-nickname">Set Nickname</button>
+    </div>
+    <div id="chat-container"></div>
+    <form id="message-form">
+        <input type="text" id="message-input" placeholder="Type your message..." required>
+        <button type="submit">Send</button>
+    </form>
     
-    // Initialize Firebase
-    firebase.initializeApp(firebaseConfig);
-    const database = firebase.database();
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     
-    // DOM elements
-    const messageForm = document.getElementById('message-form');
-    const messageInput = document.getElementById('message-input');
-    const chatContainer = document.getElementById('chat-container');
-    
-    // Send message
-    messageForm.addEventListener('submit', e => {
-      e.preventDefault();
-      const message = messageInput.value.trim();
-      if (message) {
-        database.ref('messages').push({
-          text: message,
-          timestamp: firebase.database.ServerValue.TIMESTAMP,
-          sender: "Anonymous"  // Default sender name
+    <script>
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyDg0wUy2BgfkdM_9ZxywZ81rXiqLdugqg0",
+            authDomain: "chat-4b9b6.firebaseapp.com",
+            databaseURL: "https://chat-4b9b6-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "chat-4b9b6",
+            storageBucket: "chat-4b9b6.firebasestorage.app",
+            messagingSenderId: "67637601490",
+            appId: "1:67637601490:web:8ee0d3f44868c950c9790b"
+        };
+        
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+        
+        // DOM elements
+        const messageForm = document.getElementById('message-form');
+        const messageInput = document.getElementById('message-input');
+        const chatContainer = document.getElementById('chat-container');
+        
+        // Nickname elements
+        const nicknameContainer = document.getElementById('nickname-container');
+        const nicknameInput = document.getElementById('nickname-input');
+        const setNicknameBtn = document.getElementById('set-nickname');
+        
+        // Store nickname
+        let currentNickname = "Anonymous";
+        
+        // Send message
+        messageForm.addEventListener('submit', e => {
+            e.preventDefault();
+            const message = messageInput.value.trim();
+            if (message) {
+                database.ref('messages').push({
+                    text: message,
+                    timestamp: firebase.database.ServerValue.TIMESTAMP,
+                    sender: currentNickname,  // Default sender name
+                });
+                messageInput.value = '';
+            }
         });
-        messageInput.value = '';
-      }
-    });
-    
-    // Load messages
-    database.ref('messages').orderByChild('timestamp').on('value', snapshot => {
-      chatContainer.innerHTML = '';
-      snapshot.forEach(childSnapshot => {
-        const msg = childSnapshot.val();
-        const messageDiv = document.createElement('div');
-        messageDiv.className = 'message';
-        messageDiv.innerHTML = `
+        
+        // Load messages
+        database.ref('messages').orderByChild('timestamp').on('value', snapshot => {
+            chatContainer.innerHTML = '';
+            snapshot.forEach(childSnapshot => {
+                const msg = childSnapshot.val();
+                const messageDiv = document.createElement('div');
+                messageDiv.className = 'message';
+                messageDiv.innerHTML = `
                     <div class="text">${msg.text}</div>
                     <div class="time">
                         ${new Date(msg.timestamp).toLocaleString()} 
                         - ${msg.sender}
                     </div>
                 `;
-        chatContainer.appendChild(messageDiv);
-      });
-      // Scroll to bottom
-      chatContainer.scrollTop = chatContainer.scrollHeight;
-    });
-  </script>
+                chatContainer.appendChild(messageDiv);
+            });
+            // Scroll to bottom
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        });
+        
+        setNicknameBtn.addEventListener('click', () => {
+            const newNickname = nicknameInput.value.trim();
+            if (newNickname) {
+                currentNickname = newNickname;
+                nicknameContainer.style.display = 'none'; // Hide nickname input after setting
+            }
+        });
+    </script>
 </body>
 </html>
