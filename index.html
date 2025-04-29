@@ -5,66 +5,64 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Simple Chat</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
+        html, button, input {
+            font-size: 1.5rem;
+            font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+            background-color: black;
+            color: white;
         }
-        #chat-container {
-            border: 1px solid #ccc;
-            padding: 20px;
-            height: 400px;
+        body {
             overflow-y: auto;
-            margin-bottom: 20px;
+            height: 100vh;
+            margin: 0;
+            padding: 6rem 0 5rem; /* Space for fixed header and input */
         }
         .message {
-            margin-bottom: 10px;
-            padding: 8px;
-            border-radius: 5px;
-            background-color: #f0f0f0;
+            margin: 0.5rem;
         }
-        .message .time {
-            font-size: 0.8em;
-            color: #666;
+        .message.mine {
+            text-align: right;
+            background-color: green;
+            padding-right: 1rem;
+            border-radius: 1rem 1rem 0.5rem;
         }
-        #message-form {
-            display: flex;
-            gap: 10px;
-        }
-        #message-input {
-            flex-grow: 1;
-            padding: 8px;
-        }
-        button {
-            padding: 8px 16px;
-            background-color: #007bff;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-        button:hover {
-            background-color: #0056b3;
+        .message.others {
+            background-color: #333;
+            padding-left: 1rem;
+            border-radius: 1rem 1rem 1rem 0.5rem;
         }
         #nickname-container {
-            margin-bottom: 15px;
-            display: flex;
-            gap: 10px;
+            position: fixed;
+            top: 0;
+            width: 100%;
+            padding: 1rem;
+            background: black;
+            z-index: 10;
         }
-        #nickname-input {
-            padding: 8px;
+        #message-form {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            padding: 1rem;
+            background: black;
+            display: none;
+        }
+        #message-input {
+            width: calc(100vw - 7rem);
+        }
+        .time {
+            font-size: 0.5rem;
         }
     </style>
 </head>
 <body>
     <div id="nickname-container">
-        <input type="text" id="nickname-input" placeholder="Enter your nickname" required>
+        <input type="text" id="nickname-input" placeholder="Enter your nickname" maxlength="156" required>
         <button id="set-nickname">Set Nickname</button>
     </div>
     <div id="chat-container"></div>
     <form id="message-form">
-        <input type="text" id="message-input" placeholder="Type your message..." required>
+        <input type="text" id="message-input" placeholder="Type your message..." autocomplete="off" required>
         <button type="submit">Send</button>
     </form>
     
@@ -92,9 +90,9 @@
         const messageForm = document.getElementById('message-form');
         const messageInput = document.getElementById('message-input');
         const chatContainer = document.getElementById('chat-container');
+        const body = document.body;
         
         // Nickname elements
-        const nicknameContainer = document.getElementById('nickname-container');
         const nicknameInput = document.getElementById('nickname-input');
         const setNicknameBtn = document.getElementById('set-nickname');
         
@@ -109,7 +107,7 @@
                 database.ref('messages').push({
                     text: message,
                     timestamp: firebase.database.ServerValue.TIMESTAMP,
-                    sender: currentNickname,  // Default sender name
+                    sender: currentNickname,
                 });
                 messageInput.value = '';
             }
@@ -121,7 +119,7 @@
             snapshot.forEach(childSnapshot => {
                 const msg = childSnapshot.val();
                 const messageDiv = document.createElement('div');
-                messageDiv.className = 'message';
+                messageDiv.className = `message ${msg.sender === currentNickname ? 'mine' : 'others'}`;
                 messageDiv.innerHTML = `
                     <div class="text">${msg.text}</div>
                     <div class="time">
@@ -131,15 +129,17 @@
                 `;
                 chatContainer.appendChild(messageDiv);
             });
-            // Scroll to bottom
-            chatContainer.scrollTop = chatContainer.scrollHeight;
+            // Scroll entire body to bottom
+            window.scrollTo(0, document.body.scrollHeight);
         });
         
         setNicknameBtn.addEventListener('click', () => {
             const newNickname = nicknameInput.value.trim();
             if (newNickname) {
                 currentNickname = newNickname;
-                nicknameContainer.style.display = 'none'; // Hide nickname input after setting
+                messageForm.style.display = 'block';
+                // Focus message input after setting nickname
+                messageInput.focus();
             }
         });
     </script>
