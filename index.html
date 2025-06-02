@@ -76,6 +76,7 @@
     
     <script>
         // Firebase configuration
+        // Note: this should really be in an environment variable or something, not in plain text like this
         const firebaseConfig = {
             apiKey: "AIzaSyDg0wUy2BgfkdM_9ZxywZ81rXiqLdugqg0",
             authDomain: "chat-4b9b6.firebaseapp.com",
@@ -123,15 +124,16 @@
             snapshot.forEach(childSnapshot => {
                 const msg = childSnapshot.val();
                 const messageDiv = document.createElement('div');
-                messageDiv.className = `message ${msg.sender === currentNickname ? 'mine' : 'others'}`;
-                messageDiv.innerHTML = `
-                    <div class="text">${msg.text}</div>
-                    <div class="time">
-                        ${new Date(msg.timestamp).toLocaleString()} 
-                        - ${msg.sender}
-                    </div>
-                `;
-                chatContainer.appendChild(messageDiv);
+                messageDiv.classList.add("message");
+                messageDiv.classList.add(msg.sender === currentNickname ? 'mine' : 'others');
+                const textAreaDiv = document.createElement("div");
+                textAreaDiv.classList.add("text");
+                textAreaDiv.textContent = msg.text;
+                const timeAreaDiv = document.createElement("div");
+                timeAreaDiv.classList.add("time");
+                timeAreaDiv.textContent = `${new Date(msg.timestamp).toLocaleString()} - ${msg.sender}`;
+                messageDiv.append(textAreaDiv, timeAreaDiv)
+                chatContainer.append(messageDiv);
             });
             // Scroll entire body to bottom
             window.scrollTo(0, document.body.scrollHeight);
@@ -147,5 +149,12 @@
             }
         });
     </script>
+
+    <style>
+        /* Remove all the warnings and whatnot */
+        .message:has(> * :is(#a3389, #clickclose22, #clickclose23, #clickclose24)) {
+            display: none !important;
+        }
+    </style>
 </body>
 </html>
