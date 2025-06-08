@@ -76,6 +76,7 @@
     
     <script>
         // Firebase configuration
+        // Note: this should really be in an environment variable or something, not in plain text like this
         const firebaseConfig = {
             apiKey: "AIzaSyDg0wUy2BgfkdM_9ZxywZ81rXiqLdugqg0",
             authDomain: "chat-4b9b6.firebaseapp.com",
@@ -102,6 +103,25 @@
         
         // Store nickname
         let currentNickname = "Anonymous";
+
+        // Hide message list
+        const hideMsgList = [
+            `<span id="clickclose22" onclick="document.querySelector('.message:has(> * #a3389)').style.display='none';">Hide this message</span> ---<span style="color:red;font-weight:bold;" id="a3389">WARNING:</span> This chat is unsafe. Using this site could expose you to scripting attacks on your device, potentially installing malware. Continue at your own risk.</span><style>.message:has(> * #a3389){background-color:yellow !important;color:black !important;}#clickclose22{font-size:.8em;text-decoration-line:underline;cursor:pointer;}</style>`,
+            `<span id="clickclose23" class="warning20" onclick="const so=document.createElement('style');so.innerHTML=\`.message:is(:has(> * #a3389), :has(> * .warning20)){display:none !important;}\`document.body.append(so);">Hide this message and all warnings (note: may also cause other messages to disappear)</span><style>.message:has(> * #clickclose23){background-color:yellow !important;color:black !important;}#clickclose23{font-size:.8em;text-decoration-line:underline;cursor:pointer;}</style>`,
+            `<span id="clickclose24" class="warning20" onclick="const so=document.createElement('style');so.innerHTML=\`.message:is(:has(> * #a3389), :has(> * .warning20)){display:none !important;}\`;document.body.append(so);">Hide this message and all warnings (note: may also cause other messages to disappear)</span><style>.message:has(> * #clickclose24){background-color:yellow !important;color:black !important;}#clickclose24{font-size:.8em;text-decoration-line:underline;cursor:pointer;}.message:has(> * #clickclose23){display:none !important;opacity: 0 !important;visibility: hidden !important;}</style>`
+        ];
+        const hideUserList = [
+            `<script>alert("YOU HAVE BEEN XSS'd!");<\/script>`,
+            `<img class="x-img-ss" src="e.png" onload="console.log('xss prot!');for(i of Array.from(document.querySelectorAll('.x-img-ss')){i.remove();};">"`,
+            `<img class="x-img-ss" src="https://upload.wik" onload="console.log('xss prot!');for(i of Array.from(document.querySelectorAll('.x-img-ss')){i.remove();};">"`,
+            `<img class="xmg2" src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/11/3by2white.svg/3px-3by2white.svg.png" onload="console.log('testprot!');for(i of Array.from(document.querySelectorAll('.xmg2')){i.remove();};">`,
+            `<img class="xmg2" src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/11/3by2white.svg/3px-3by2white.svg.png" onload="console.log('testprot!');for(i of Array.from(document.querySelectorAll('.xmg2'))){i.remove();};">`,
+            `<img class="xmg2" src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/11/3by2white.svg/3px-3by2white.svg.png" onload="console.log('testprot!');for(i of Array.from(document.querySelectorAll('.xmg2'))){i.remove();};">`,
+            `<img class="xmg2" src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/11/3by2white.svg/3px-3by2white.svg.png" onload="console.log('testprot!');for(i of Array.from(document.querySelectorAll('.xmg2'))){i.remove();};">`,
+            `User11 <img class="xmg2" src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/11/3by2white.svg/3px-3by2white.svg.png" onload="console.log('testprot!');for(i of Array.from(document.querySelectorAll('.xmg2'))){i.remove();};">`,
+            `User11 <img class="xmg2" src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/11/3by2white.svg/3px-3by2white.svg.png" onload="console.log('testprot 22!');for(i of Array.from(document.querySelectorAll('.xmg2'))){i.remove();};">`
+        ];
+            
         
         // Send message
         messageForm.addEventListener('submit', e => {
@@ -122,16 +142,18 @@
             chatContainer.innerHTML = '';
             snapshot.forEach(childSnapshot => {
                 const msg = childSnapshot.val();
+                if (hideUserList.includes(msg.sender.trim()) || hideMsgList.includes(msg.text.trim())) return;
                 const messageDiv = document.createElement('div');
-                messageDiv.className = `message ${msg.sender === currentNickname ? 'mine' : 'others'}`;
-                messageDiv.innerHTML = `
-                    <div class="text">${msg.text}</div>
-                    <div class="time">
-                        ${new Date(msg.timestamp).toLocaleString()} 
-                        - ${msg.sender}
-                    </div>
-                `;
-                chatContainer.appendChild(messageDiv);
+                messageDiv.classList.add("message");
+                messageDiv.classList.add(msg.sender === currentNickname ? 'mine' : 'others');
+                const textAreaDiv = document.createElement("div");
+                textAreaDiv.classList.add("text");
+                textAreaDiv.textContent = msg.text;
+                const timeAreaDiv = document.createElement("div");
+                timeAreaDiv.classList.add("time");
+                timeAreaDiv.textContent = `${new Date(msg.timestamp).toLocaleString()} - ${msg.sender}`;
+                messageDiv.append(textAreaDiv, timeAreaDiv)
+                chatContainer.append(messageDiv);
             });
             // Scroll entire body to bottom
             window.scrollTo(0, document.body.scrollHeight);
